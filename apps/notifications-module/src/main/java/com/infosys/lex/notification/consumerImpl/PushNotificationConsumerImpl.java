@@ -31,7 +31,7 @@ public class PushNotificationConsumerImpl implements PushNotificationConsumer {
 	private static final ObjectMapper mapper = new ObjectMapper();
 
 	@KafkaListener(id = "id2", groupId = "push_notification-consumer", topicPartitions = {
-			@TopicPartition(topic = "push_notification_events", partitions = { "0", "1", "2", "3" }) })
+			@TopicPartition(topic = "push_notification_events", partitions = "0") })
 	public void consumePushNotificationEvent(ConsumerRecord<?, ?> consumerRecord) {
 
 		if (consumerUtilService.checkEventTimestamp(consumerRecord.timestamp())) {
