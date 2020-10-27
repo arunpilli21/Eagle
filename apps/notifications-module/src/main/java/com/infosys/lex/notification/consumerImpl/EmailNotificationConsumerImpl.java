@@ -31,7 +31,7 @@ public class EmailNotificationConsumerImpl implements EmailNotificationConsumer 
 	private static final ObjectMapper mapper = new ObjectMapper();
 
 	@KafkaListener(id = "id1", groupId = "email-notification-consumer", topicPartitions = {
-			@TopicPartition(topic = "email_notification_events") })
+			@TopicPartition(topic = "email_notification_events", partitions = { "0"}) })
 	public void consumeEmailEvent(ConsumerRecord<?, ?> consumerRecord) {
 
 		if (consumerUtilServ.checkEventTimestamp(consumerRecord.timestamp())) {

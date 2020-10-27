@@ -35,7 +35,7 @@ public class MasterNotificationConsumerImpl implements MasterNotificationConsume
 	private static final ObjectMapper mapper = new ObjectMapper();
 
 	@KafkaListener(id = "id0", groupId = "notification-consumer", topicPartitions = {
-			@TopicPartition(topic = "notification_events") })
+			@TopicPartition(topic = "notification_events", partitions = { "0"}) })
 	public void consumeNotificationEvent(ConsumerRecord<String, String> consumerRecord) throws Exception {
 
 		logger.info("Key: "+ consumerRecord.key() + ", Value:" +consumerRecord.value());
