@@ -54,6 +54,11 @@ public class ProducerServiceImpl implements ProducerService {
 
 	@Override
 	public void enqueueEmailEvent(EmailRequest emailEvent) throws JsonProcessingException {
+        try {
+            throw new Exception("TenqueueEmailEvent : ");
+        } catch (Exception e) {
+            System.out.println("enqueueEmailEvent Raised : ");
+        }
 
 		if (emailEvent.getRootOrg() == null || emailEvent.getRootOrg().isEmpty())
 			throw new InvalidReceiveException("rootOrg is mandatory");

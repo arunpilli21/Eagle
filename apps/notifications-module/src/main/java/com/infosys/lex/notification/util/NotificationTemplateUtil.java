@@ -4,10 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.infosys.lex.notification.dto.UserInfo;
 import com.infosys.lex.notification.exception.ApplicationLogicException;
+import org.slf4j.ILoggerFactory;
 
 public class NotificationTemplateUtil {
+
+	private  LexNotificationLogger logger = new LexNotificationLogger(getClass().getName());
 
 	public static String replaceTags(String rootOrg, Map<String, Object> tagValuePairs, String text,
 			Map<String, UserInfo> usersInfoMap, Map<String, List<String>> recipients, String recipientRole,
@@ -226,7 +231,10 @@ public class NotificationTemplateUtil {
 		}
 		// if tag found in the template matches with tagValuePairs entry, then replace
 		// the as is.
+		System.out.println("Tag value iteration started....... See the below text will be replaced!");
+		System.out.println("text ........."+ text);
 		for (Map.Entry<String, Object> entry : tagValuePairs.entrySet()) {
+			System.out.println("Key ......"+ entry.getKey() + "    Value" + entry.getValue());
 			if (!usersInfoMap.containsKey(entry.getValue()))
 				continue;
 			if (text.contains(entry.getKey() + "Name"))
@@ -241,7 +249,17 @@ public class NotificationTemplateUtil {
 
 		// also searching in recipients of the notification event, if tag name matches
 		// then replace as comma seperated values.
+		System.out.println("Recipient value iteration started....... See the below text will be replaced!");
+		System.out.println("text ........."+ text);
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			System.out.println("User Map Info........");
+			System.out.println(mapper.writeValueAsString(usersInfoMap));
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		}
 		for (Map.Entry<String, List<String>> recipientEntry : recipients.entrySet()) {
+			System.out.println("Key ......"+ recipientEntry.getKey() + "    Value" + recipientEntry.getValue());
 			String replaceWith = "";
 			String replaceText = "";
 			
@@ -299,7 +317,8 @@ public class NotificationTemplateUtil {
 			}
 
 		}
-
+       System.out.println("Replaced Text");
+		System.out.println(text);
 		return text;
 	}
 
