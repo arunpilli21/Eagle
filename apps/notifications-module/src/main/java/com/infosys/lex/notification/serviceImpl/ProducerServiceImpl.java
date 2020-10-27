@@ -31,6 +31,7 @@ import com.infosys.lex.notification.dto.UserInfo;
 import com.infosys.lex.notification.exception.ApplicationLogicException;
 import com.infosys.lex.notification.service.ProducerService;
 import com.infosys.lex.notification.service.UserInformationService;
+import com.infosys.lex.notification.util.LexNotificationLogger;
 
 @Service
 public class ProducerServiceImpl implements ProducerService {
@@ -43,13 +44,18 @@ public class ProducerServiceImpl implements ProducerService {
 
 	private ObjectMapper mapper = new ObjectMapper();
 
+	private LexNotificationLogger logger = new LexNotificationLogger(getClass().getName());
+	
 	@Override
 	public void enqueueNotificationEvent(NotificationEvent notificationEvent) throws JsonProcessingException {
 
 		if (notificationEvent.getRootOrg() == null || notificationEvent.getRootOrg().isEmpty())
 			throw new InvalidReceiveException("rootOrg is mandatory");
 
-		kafkaProducer.send("notification_events", UUID.randomUUID().toString(), mapper.writeValueAsString(notificationEvent));
+		String key = UUID.randomUUID().toString();
+		String data = mapper.writeValueAsString(notificationEvent);
+		logger.info("enqueueNotificationEvent... key: " + key + ", data: " + data);
+		kafkaProducer.send("notification_events", key, data);
 	}
 
 	@Override
