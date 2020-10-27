@@ -151,6 +151,8 @@ public class EmailServiceImpl implements EmailService {
 			int endIndex = tolistSize< chunkSize?tolistSize:chunkSize;
 			int startIndex = 0;
 			while (endIndex <= tolistSize && startIndex != endIndex) {
+				logger.info("Sending email notification ......");
+				logger.info(mapper.writeValueAsString(emailEvent));
 				newToList = toList.subList(startIndex, endIndex);
 				startIndex = endIndex;
 				endIndex += chunkSize;
