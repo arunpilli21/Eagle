@@ -31,7 +31,7 @@ public class EmailNotificationConsumerImpl implements EmailNotificationConsumer 
 	private static final ObjectMapper mapper = new ObjectMapper();
 
 	@KafkaListener(id = "id1", groupId = "email-notification-consumer", topicPartitions = {
-			@TopicPartition(topic = "email_notification_events", partitions = { "0", "1", "2", "3" }) })
+			@TopicPartition(topic = "email_notification_events") })
 	public void consumeEmailEvent(ConsumerRecord<?, ?> consumerRecord) {
 
 		if (consumerUtilServ.checkEventTimestamp(consumerRecord.timestamp())) {
@@ -40,7 +40,7 @@ public class EmailNotificationConsumerImpl implements EmailNotificationConsumer 
 			try {
 				emailEvent = mapper.readValue(message, new TypeReference<EmailRequest>() {
 				});
-				logger.info("Recieved email event :");
+					logger.info("Recieved email event :");
 				logger.info(mapper.writeValueAsString(emailEvent));
 				emailService.sendEmail(emailEvent);
 				logger.info("Email sent succussfully :");
