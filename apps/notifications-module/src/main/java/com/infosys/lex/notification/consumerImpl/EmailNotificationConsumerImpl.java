@@ -40,7 +40,10 @@ public class EmailNotificationConsumerImpl implements EmailNotificationConsumer 
 			try {
 				emailEvent = mapper.readValue(message, new TypeReference<EmailRequest>() {
 				});
+				logger.info("Recieved email event :");
+				logger.info(mapper.writeValueAsString(emailEvent));
 				emailService.sendEmail(emailEvent);
+				logger.info("Email sent succussfully :");
 			} catch (IOException e) {
 				logger.error(e);
 				consumerUtilServ.saveError("Could not parse request body", "Could not parse request body", e,
