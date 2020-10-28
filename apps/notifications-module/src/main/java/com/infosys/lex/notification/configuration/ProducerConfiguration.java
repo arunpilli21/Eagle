@@ -42,6 +42,10 @@ public class ProducerConfiguration {
 		config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, appServerProps.getKafkabootstrapAddress());
 		config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
 		config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+		config.put(ProducerConfig.BATCH_SIZE_CONFIG, 16384);
+		config.put(ProducerConfig.LINGER_MS_CONFIG, 1);
+		config.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 33554432);
+		config.put(ProducerConfig.RETRIES_CONFIG, 0);
 //		config.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
 //		config.put(ProducerConfig.ACKS_CONFIG, "all");
 		return new DefaultKafkaProducerFactory<String, String>(config);
