@@ -128,117 +128,117 @@ public class NotificationConsumerServiceImpl implements NotificationConsumerServ
 			logger.error("could not print all config: ");
 		}
 
-		for (Map.Entry<String, List<String>> recipient : recipients.entrySet()) {
-
-			// templateid to org map used for configured receiver events
-			Map<String, String> templateIdToOrgMap = new HashMap<>();
-			// this is used for events where receiver email is configured
-			Map<String, String[]> userIdConfiguredRecieverEmailMap = new HashMap<>();
-
-			String recipientRole = recipient.getKey();
-			List<String> recipientsUserIds = new ArrayList<>(recipient.getValue());
-            logger.info("** recipientRole: "+recipientRole);
-            logger.info("** recipientsUserIds: "+recipientsUserIds);
-			boolean emailToBeSentAnyUser = false;
-			List<String> eventRecipientUserIdsForEmail = new ArrayList<String>();
-			boolean isEventRecieverConfigured = false;
-			for (String userId : recipientsUserIds) {
-
-				// if userid data not available dont send any notification
-				if (!usersInfoMap.containsKey(userId))
-					continue;
-
-				UserInfo userInfo = usersInfoMap.get(userId);
-				String domainName = NotificationTemplateUtil.getDomainForUser(userInfo.getOrgs(), orgDomainMap);
-
-				Map<String, Object> resp = this.getTenantConfiguredModesForUser(eventId, tenantNotificationConfigMaps,
-						recipientRole, userInfo);
-				// getting all the notification modes for this user for given recipient role
-				List<Map<String, Object>> userNotificationModes = (List<Map<String, Object>>) resp
-						.get("configuredModes");
-                try{
-                    logger.info("** All User notification Config: "+new ObjectMapper().writeValueAsString(tenantNotificationConfigMaps));
-                    logger.info("** All TenantConfiguredModesForUser: "+new ObjectMapper().writeValueAsString(resp));
-
-
-
-                }catch (JsonProcessingException e){
-                    logger.error("could not print userNotificationDigests: " + userNotificationModes);
-                }
-
-				isEventRecieverConfigured = (boolean) resp.get("isEventRecieverConfigured");
-				String[] receiverEmails = (String[]) resp.get("receiverEmails");
-				for (Map<String, Object> userNotificationMode : userNotificationModes) {
-
-				    logger.info("** User notification mode: "+userNotificationMode.get("mode"));
-					if (userNotificationMode.get("mode").equals("email")) {
-
-						emailToBeSentAnyUser = true;
-						if (!eventRecipientUserIdsForEmail.contains(userId))
-							eventRecipientUserIdsForEmail.add(userId);
-						// this is for receiver email configured events as for every user
-						// the receiver emails configured may be different based on their org
-						if (isEventRecieverConfigured)
-							userIdConfiguredRecieverEmailMap.put(userId, receiverEmails);
-						// for preset receiver list event
-						if (userNotificationMode.get("template_id") != null)
-							templateIdToOrgMap.put(userNotificationMode.get("template_id").toString(),
-									userNotificationMode.get("org").toString());
-
-					} else if (userNotificationMode.get("mode").equals("inApp")) {
-						inAppRequests.add(this.createInAppRequest(notificationEvent, userId, recipientRole,
-								usersInfoMap, userNotificationMode, targetDataMapping, domainName));
-					} else if (userNotificationMode.get("mode").equals("push")) {
-						try {
-							producerService.enqueuePushEvent(this.createPushRequest(notificationEvent, userId,
-									recipientRole, usersInfoMap, userNotificationMode, targetDataMapping, domainName));
-						} catch (Exception e) {
-							logger.error("Could not send push notification event to kafka");
-							consumerUtilServ.saveError(rootOrg, eventId, e, new HashMap<>());
-						}
-					} else if (userNotificationMode.get("mode").equals("sms")) {
-						this.createSmsRequest(notificationEvent, userId, recipientRole, usersInfoMap,
-								userNotificationMode, targetDataMapping, domainName);
-					}
-				}
-			}
-
-			if (!emailToBeSentAnyUser)
-				continue;
-
-			// If any email is required to be sent for the given recipient role
-
-			if (eventRecipientUserIdsForEmail.size() == 1) {
-				// when there is only one user for given recipient role of the event raised(No
-				// bucketing done based on org
-				// and language
-                logger.info("** User eventRecipientUserIdsForEmail: "+eventRecipientUserIdsForEmail);
-
-                emailProcessingServ.enqueueEmailNotificationForSingleUser(rootOrg, eventId, recipientRole,
-						eventRecipientUserIdsForEmail.get(0), recipients, usersInfoMap,
-						notificationEvent.getTagValues(), templateIdToOrgMap, orgDomainMap, targetDataMapping,
-						userIdConfiguredRecieverEmailMap, orgAppEmailMap, isEventRecieverConfigured);
-			}
-
-			else if (isEventRecieverConfigured) {
-                logger.info("** User isEventRecieverConfigured: "+isEventRecieverConfigured);
-
-                emailProcessingServ.enqueueEmailNotfificationForRecieverConfigedEvent(rootOrg, eventId, recipientRole,
-						eventRecipientUserIdsForEmail, recipients, usersInfoMap, notificationEvent.getTagValues(),
-						templateIdToOrgMap, orgDomainMap, targetDataMapping, userIdConfiguredRecieverEmailMap,
-						orgAppEmailMap);
-			} else {
-                logger.info("** User sending email to all the users in given recipient role");
-
-                // sending email to all the users in given recipient role
-				emailProcessingServ.enqueueEmailNotification(rootOrg, eventId, recipientRole,
-						eventRecipientUserIdsForEmail, recipients, usersInfoMap, notificationEvent.getTagValues(),
-						templateIdToOrgMap, orgDomainMap, targetDataMapping, orgAppEmailMap);
-			}
-		}
-
-		if (!inAppRequests.isEmpty())
-			userNotificationService.sendInAppNotifications(notificationEvent, inAppRequests);
+//		for (Map.Entry<String, List<String>> recipient : recipients.entrySet()) {
+//
+//			// templateid to org map used for configured receiver events
+//			Map<String, String> templateIdToOrgMap = new HashMap<>();
+//			// this is used for events where receiver email is configured
+//			Map<String, String[]> userIdConfiguredRecieverEmailMap = new HashMap<>();
+//
+//			String recipientRole = recipient.getKey();
+//			List<String> recipientsUserIds = new ArrayList<>(recipient.getValue());
+//            logger.info("** recipientRole: "+recipientRole);
+//            logger.info("** recipientsUserIds: "+recipientsUserIds);
+//			boolean emailToBeSentAnyUser = false;
+//			List<String> eventRecipientUserIdsForEmail = new ArrayList<String>();
+//			boolean isEventRecieverConfigured = false;
+//			for (String userId : recipientsUserIds) {
+//
+//				// if userid data not available dont send any notification
+//				if (!usersInfoMap.containsKey(userId))
+//					continue;
+//
+//				UserInfo userInfo = usersInfoMap.get(userId);
+//				String domainName = NotificationTemplateUtil.getDomainForUser(userInfo.getOrgs(), orgDomainMap);
+//
+//				Map<String, Object> resp = this.getTenantConfiguredModesForUser(eventId, tenantNotificationConfigMaps,
+//						recipientRole, userInfo);
+//				// getting all the notification modes for this user for given recipient role
+//				List<Map<String, Object>> userNotificationModes = (List<Map<String, Object>>) resp
+//						.get("configuredModes");
+//                try{
+//                    logger.info("** All User notification Config: "+new ObjectMapper().writeValueAsString(tenantNotificationConfigMaps));
+//                    logger.info("** All TenantConfiguredModesForUser: "+new ObjectMapper().writeValueAsString(resp));
+//
+//
+//
+//                }catch (JsonProcessingException e){
+//                    logger.error("could not print userNotificationDigests: " + userNotificationModes);
+//                }
+//
+//				isEventRecieverConfigured = (boolean) resp.get("isEventRecieverConfigured");
+//				String[] receiverEmails = (String[]) resp.get("receiverEmails");
+//				for (Map<String, Object> userNotificationMode : userNotificationModes) {
+//
+//				    logger.info("** User notification mode: "+userNotificationMode.get("mode"));
+//					if (userNotificationMode.get("mode").equals("email")) {
+//
+//						emailToBeSentAnyUser = true;
+//						if (!eventRecipientUserIdsForEmail.contains(userId))
+//							eventRecipientUserIdsForEmail.add(userId);
+//						// this is for receiver email configured events as for every user
+//						// the receiver emails configured may be different based on their org
+//						if (isEventRecieverConfigured)
+//							userIdConfiguredRecieverEmailMap.put(userId, receiverEmails);
+//						// for preset receiver list event
+//						if (userNotificationMode.get("template_id") != null)
+//							templateIdToOrgMap.put(userNotificationMode.get("template_id").toString(),
+//									userNotificationMode.get("org").toString());
+//
+//					} else if (userNotificationMode.get("mode").equals("inApp")) {
+//						inAppRequests.add(this.createInAppRequest(notificationEvent, userId, recipientRole,
+//								usersInfoMap, userNotificationMode, targetDataMapping, domainName));
+//					} else if (userNotificationMode.get("mode").equals("push")) {
+//						try {
+//							producerService.enqueuePushEvent(this.createPushRequest(notificationEvent, userId,
+//									recipientRole, usersInfoMap, userNotificationMode, targetDataMapping, domainName));
+//						} catch (Exception e) {
+//							logger.error("Could not send push notification event to kafka");
+//							consumerUtilServ.saveError(rootOrg, eventId, e, new HashMap<>());
+//						}
+//					} else if (userNotificationMode.get("mode").equals("sms")) {
+//						this.createSmsRequest(notificationEvent, userId, recipientRole, usersInfoMap,
+//								userNotificationMode, targetDataMapping, domainName);
+//					}
+//				}
+//			}
+//
+//			if (!emailToBeSentAnyUser)
+//				continue;
+//
+//			// If any email is required to be sent for the given recipient role
+//
+//			if (eventRecipientUserIdsForEmail.size() == 1) {
+//				// when there is only one user for given recipient role of the event raised(No
+//				// bucketing done based on org
+//				// and language
+//                logger.info("** User eventRecipientUserIdsForEmail: "+eventRecipientUserIdsForEmail);
+//
+//                emailProcessingServ.enqueueEmailNotificationForSingleUser(rootOrg, eventId, recipientRole,
+//						eventRecipientUserIdsForEmail.get(0), recipients, usersInfoMap,
+//						notificationEvent.getTagValues(), templateIdToOrgMap, orgDomainMap, targetDataMapping,
+//						userIdConfiguredRecieverEmailMap, orgAppEmailMap, isEventRecieverConfigured);
+//			}
+//
+//			else if (isEventRecieverConfigured) {
+//                logger.info("** User isEventRecieverConfigured: "+isEventRecieverConfigured);
+//
+//                emailProcessingServ.enqueueEmailNotfificationForRecieverConfigedEvent(rootOrg, eventId, recipientRole,
+//						eventRecipientUserIdsForEmail, recipients, usersInfoMap, notificationEvent.getTagValues(),
+//						templateIdToOrgMap, orgDomainMap, targetDataMapping, userIdConfiguredRecieverEmailMap,
+//						orgAppEmailMap);
+//			} else {
+//                logger.info("** User sending email to all the users in given recipient role");
+//
+//                // sending email to all the users in given recipient role
+//				emailProcessingServ.enqueueEmailNotification(rootOrg, eventId, recipientRole,
+//						eventRecipientUserIdsForEmail, recipients, usersInfoMap, notificationEvent.getTagValues(),
+//						templateIdToOrgMap, orgDomainMap, targetDataMapping, orgAppEmailMap);
+//			}
+//		}
+//
+//		if (!inAppRequests.isEmpty())
+//			userNotificationService.sendInAppNotifications(notificationEvent, inAppRequests);
 	}
 
 	private Map<String, String> getTargetData(NotificationEvent notificationEvent) {
